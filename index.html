@@ -1,11 +1,61 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
     <body>
-        <h1>Hello!</h1>
-        <input id="a"> + <input id="b"> <button id="calc">=</button> <label id="res">0</label>
+        <canvas id="canvas" width=1000 height=500></canvas>
         <script>
-            document.querySelector('#calc').addEventListener('click', () => {
-                document.querySelector('#res').innerText = parseInt(document.querySelector('#a').value) + parseInt(document.querySelector('#b').value)
+            const canvas = document.querySelector('#canvas')
+            const ctx = canvas.getContext('2d')
+            
+            CanvasRenderingContext2D.prototype.fillCircle = function (x, y, r) {
+                ctx.beginPath()
+                ctx.arc(x, y, r, 0, 2 * Math.PI)
+                ctx.fill()
+                ctx.closePath()
+            }
+            
+            function isCollision(x1, y1, r1, x2, y2, r2) {
+                let dist = Math.sqrt(Math.pow(Math.abs(x1 - x2), 2) + Math.pow(Math.abs(y1 - y2), 2))
+                return dist <= r1 + r2
+            }
+            
+            let x = 100, y = 250, mul = 1, bias = 0, key_status = [], obstacle = []
+            
+            for (let i = 0; i < 10; i++) {
+                obstacle.push({ x: 200 + 70 * i, y: 0, r: 10 })
+                setInterval(() => {
+                    obstacle[i].y += (((i + 1) * 2) % 7) + 1
+                    obstacle[i].y %= 500
+                }, 10)
+            }
+            
+            setInterval(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                
+                if (key_status[87] === true) y -= 2 // w
+                if (key_status[65] === true) x -= 2 // a
+                if (key_status[83] === true) y += 2 // s
+                if (key_status[68] === true) x += 2 // d
+                
+                for (let i = 0; i < obstacle.length; i++) {
+                    ctx.fillStyle = '#ff0000'
+                    ctx.fillCircle(obstacle[i].x, obstacle[i].y, obstacle[i].r)
+                    
+                    if (isCollision(x, y, 20, obstacle[i].x, obstacle[i].y, obstacle[i].r)) {
+                        x = 100
+                        y = 250
+                    }
+                }
+                
+                ctx.fillStyle = '#000000'
+                ctx.fillCircle(x, y, 20)
+            }, 10)
+            
+            document.addEventListener('keydown', evt => {
+                key_status[evt.keyCode] = true
+            })
+            
+            document.addEventListener('keyup', evt => {
+                key_status[evt.keyCode] = false
             })
         </script>
     </body>
